@@ -5,6 +5,8 @@
  * main.c
  */
 
+#include <dlfcn.h>
+
 #include "session.h"
 #include "utility.h"
 #include "tunables.h"
@@ -31,6 +33,7 @@ static void do_sanity_checks(void);
 static void session_init(struct vsf_session* p_sess);
 static void env_init(void);
 static void limits_init(void);
+static void load_hook_module(const char *module_file, struct vsf_session* p_sess);
 
 int
 main(int argc, const char* argv[])
@@ -66,7 +69,9 @@ main(int argc, const char* argv[])
     /* Secure connection state */
     0, 0, 0, 0, 0, INIT_MYSTR, 0, -1, -1,
     /* Login fails */
-    0
+    0,
+	/* hookers */
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   };
   int config_loaded = 0;
   int i;
@@ -120,6 +125,11 @@ main(int argc, const char* argv[])
     }
     vsf_sysutil_free(p_statbuf);
   }
+  /* Load hook-module */
+  if (tunable_hook_module) {
+	  load_hook_module(tunable_hook_module, &the_session);
+  }
+
   /* Resolve pasv_address if required */
   if (tunable_pasv_address && tunable_pasv_addr_resolve)
   {
@@ -377,5 +387,93 @@ session_init(struct vsf_session* p_sess)
     }
     p_sess->anon_upload_chown_uid = vsf_sysutil_user_getuid(p_user);
   }
+}
+
+static void load_hook_module(const char *module_file, struct vsf_session* p_sess) {
+	char *error;
+	void *sym;
+	void *(*hook_module_init)(const char* module_config_file);
+	void *handle = dlopen(module_file, RTLD_LAZY);
+	if (!handle)
+		return;
+	hook_module_init = dlsym(handle, "hook_module_init");
+	if (!(error = dlerror()))
+		p_sess->hook_module_context = hook_module_init(tunable_hook_module_config_file);
+
+	sym = dlsym(handle, "hook_pwd");
+	if (!(error = dlerror()))
+		p_sess->hook_pwd = sym;
+
+	sym = dlsym(handle, "hook_cwd_ok");
+	if (!(error = dlerror()))
+		p_sess->hook_cwd_ok = sym;
+
+	sym = dlsym(handle, "hook_cwd_ng");
+	if (!(error = dlerror()))
+		p_sess->hook_cwd_ng = sym;
+
+	sym = dlsym(handle, "hook_retr");
+	if (!(error = dlerror()))
+		p_sess->hook_retr = sym;
+
+	sym = dlsym(handle, "hook_stor");
+	if (!(error = dlerror()))
+		p_sess->hook_stor = sym;
+
+	sym = dlsym(handle, "hook_list");
+	if (!(error = dlerror()))
+		p_sess->hook_list = sym;
+
+	sym = dlsym(handle, "hook_mkd_ok");
+	if (!(error = dlerror()))
+		p_sess->hook_mkd_ok = sym;
+
+	sym = dlsym(handle, "hook_mkd_ng");
+	if (!(error = dlerror()))
+		p_sess->hook_mkd_ng = sym;
+
+	sym = dlsym(handle, "hook_rmd_ok");
+	if (!(error = dlerror()))
+		p_sess->hook_rmd_ok = sym;
+
+	sym = dlsym(handle, "hook_rmd_ng");
+	if (!(error = dlerror()))
+		p_sess->hook_rmd_ng = sym;
+
+	sym = dlsym(handle, "hook_dele_ok");
+	if (!(error = dlerror()))
+		p_sess->hook_dele_ok = sym;
+
+	sym = dlsym(handle, "hook_dele_ng");
+	if (!(error = dlerror()))
+		p_sess->hook_dele_ng = sym;
+
+	sym = dlsym(handle, "hook_rest");
+	if (!(error = dlerror()))
+		p_sess->hook_rest = sym;
+
+	sym = dlsym(handle, "hook_rnfr_ok");
+	if (!(error = dlerror()))
+		p_sess->hook_rnfr_ok = sym;
+
+	sym = dlsym(handle, "hook_rnfr_ng");
+	if (!(error = dlerror()))
+		p_sess->hook_rnfr_ng = sym;
+
+	sym = dlsym(handle, "hook_rnto_ok");
+	if (!(error = dlerror()))
+		p_sess->hook_rnto_ok = sym;
+
+	sym = dlsym(handle, "hook_rnto_ng");
+	if (!(error = dlerror()))
+		p_sess->hook_rnto_ng = sym;
+
+	sym = dlsym(handle, "hook_size_ok");
+	if (!(error = dlerror()))
+		p_sess->hook_size_ok = sym;
+
+	sym = dlsym(handle, "hook_size_ng");
+	if (!(error = dlerror()))
+		p_sess->hook_size_ng = sym;
 }
 

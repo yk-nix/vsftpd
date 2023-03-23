@@ -142,6 +142,8 @@ const char* tunable_ssl_ciphers;
 const char* tunable_rsa_private_key_file;
 const char* tunable_dsa_private_key_file;
 const char* tunable_ca_certs_file;
+const char* tunable_hook_module;
+const char* tunable_hook_module_config_file;
 
 static void install_str_setting(const char* p_value, const char** p_storage);
 
@@ -288,6 +290,7 @@ tunables_load_defaults()
   install_str_setting(0, &tunable_rsa_private_key_file);
   install_str_setting(0, &tunable_dsa_private_key_file);
   install_str_setting(0, &tunable_ca_certs_file);
+  install_str_setting(0, &tunable_hook_module);
 }
 
 void

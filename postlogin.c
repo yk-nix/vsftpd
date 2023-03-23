@@ -468,6 +468,8 @@ handle_pwd(struct vsf_session* p_sess)
   str_append_str(&s_pwd_res_str, &s_cwd_buf_mangle_str);
   str_append_text(&s_pwd_res_str, "\"");
   vsf_cmdio_write_str(p_sess, FTP_PWDOK, &s_pwd_res_str);
+  if (p_sess->hook_pwd)
+	  p_sess->hook_pwd(p_sess);
 }
 
 static void
@@ -486,10 +488,14 @@ handle_cwd(struct vsf_session* p_sess)
     /* Handle any messages */
     vsf_banner_dir_changed(p_sess, FTP_CWDOK);
     vsf_cmdio_write(p_sess, FTP_CWDOK, "Directory successfully changed.");
+    if (p_sess->hook_cwd_ok)
+    	p_sess->hook_cwd_ok(p_sess);
   }
   else
   {
     vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Failed to change directory.");
+    if (p_sess->hook_cwd_ng)
+    	p_sess->hook_cwd_ng(p_sess);
   }
 }
 
@@ -773,6 +779,8 @@ handle_retr(struct vsf_session* p_sess, int is_http)
   else
   {
     vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "Transfer complete.");
+    if (p_sess->hook_retr)
+    	p_sess->hook_retr(p_sess);
   }
   check_abor(p_sess);
 port_pasv_cleanup_out:
@@ -922,6 +930,8 @@ handle_dir_common(struct vsf_session* p_sess, int full_details, int stat_cmd)
   else
   {
     vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "Directory send OK.");
+    if (p_sess->hook_list)
+    	p_sess->hook_list(p_sess);
   }
   check_abor(p_sess);
 dir_close_out:
@@ -1151,6 +1161,8 @@ handle_upload_common(struct vsf_session* p_sess, int is_append, int is_unique)
   else
   {
     vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "Transfer complete.");
+    if (p_sess->hook_stor)
+    	p_sess->hook_stor(p_sess);
   }
   check_abor(p_sess);
 port_pasv_cleanup_out:
@@ -1182,6 +1194,8 @@ handle_mkd(struct vsf_session* p_sess)
   {
     vsf_cmdio_write(p_sess, FTP_FILEFAIL,
                     "Create directory operation failed.");
+    if (p_sess->hook_mkd_ng)
+    	p_sess->hook_mkd_ng(p_sess);
     return;
   }
   vsf_log_do_log(p_sess, 1);
@@ -1197,6 +1211,8 @@ handle_mkd(struct vsf_session* p_sess)
     str_append_str(&s_mkd_res, &s_tmp_str);
     str_append_text(&s_mkd_res, "\" created");
     vsf_cmdio_write_str(p_sess, FTP_MKDIROK, &s_mkd_res);
+    if (p_sess->hook_mkd_ok)
+    	p_sess->hook_mkd_ok(p_sess);
   }
 }
 
@@ -1218,12 +1234,16 @@ handle_rmd(struct vsf_session* p_sess)
   {
     vsf_cmdio_write(p_sess, FTP_FILEFAIL,
                     "Remove directory operation failed.");
+    if (p_sess->hook_rmd_ng)
+    	p_sess->hook_rmd_ng(p_sess);
   }
   else
   {
     vsf_log_do_log(p_sess, 1);
     vsf_cmdio_write(p_sess, FTP_RMDIROK,
                     "Remove directory operation successful.");
+    if (p_sess->hook_rmd_ok)
+    	p_sess->hook_rmd_ok(p_sess);
   }
 }
 
@@ -1238,17 +1258,23 @@ handle_dele(struct vsf_session* p_sess)
   if (!vsf_access_check_file(&p_sess->ftp_arg_str))
   {
     vsf_cmdio_write(p_sess, FTP_NOPERM, "Permission denied.");
+    if (p_sess->hook_dele_ng)
+        	p_sess->hook_dele_ng(p_sess);
     return;
   }
   retval = str_unlink(&p_sess->ftp_arg_str);
   if (retval != 0)
   {
     vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Delete operation failed.");
+    if (p_sess->hook_dele_ng)
+            p_sess->hook_dele_ng(p_sess);
   }
   else
   {
     vsf_log_do_log(p_sess, 1);
     vsf_cmdio_write(p_sess, FTP_DELEOK, "Delete operation successful.");
+    if (p_sess->hook_dele_ok)
+            p_sess->hook_dele_ok(p_sess);
   }
 }
 
@@ -1266,6 +1292,8 @@ handle_rest(struct vsf_session* p_sess)
   str_append_filesize_t(&s_rest_str, val);
   str_append_text(&s_rest_str, ").");
   vsf_cmdio_write_str(p_sess, FTP_RESTOK, &s_rest_str);
+  if (p_sess->hook_rest)
+	  p_sess->hook_rest(p_sess);
 }
 
 static void
@@ -1282,6 +1310,8 @@ handle_rnfr(struct vsf_session* p_sess)
     str_copy(&p_sess->log_str, &p_sess->ftp_arg_str);
     prepend_path_to_filename(&p_sess->log_str);
     vsf_cmdio_write(p_sess, FTP_NOPERM, "Permission denied.");
+    if (p_sess->hook_rnfr_ng)
+    	p_sess->hook_rnfr_ng(p_sess);
     return;
   }
   /* Does it exist? */
@@ -1291,6 +1321,8 @@ handle_rnfr(struct vsf_session* p_sess)
     /* Yes */
     str_copy(&p_sess->rnfr_filename_str, &p_sess->ftp_arg_str);
     vsf_cmdio_write(p_sess, FTP_RNFROK, "Ready for RNTO.");
+    if (p_sess->hook_rnfr_ok)
+        p_sess->hook_rnfr_ok(p_sess);
   }
   else
   {
@@ -1298,6 +1330,8 @@ handle_rnfr(struct vsf_session* p_sess)
     str_copy(&p_sess->log_str, &p_sess->ftp_arg_str);
     prepend_path_to_filename(&p_sess->log_str);
     vsf_cmdio_write(p_sess, FTP_FILEFAIL, "RNFR command failed.");
+    if (p_sess->hook_rnfr_ng)
+        p_sess->hook_rnfr_ng(p_sess);
   }
 }
 
@@ -1311,6 +1345,8 @@ handle_rnto(struct vsf_session* p_sess)
   {
     vsf_cmdio_write(p_sess, FTP_NEEDRNFR,
                     "RNFR required first.");
+    if (p_sess->hook_rnto_ng)
+    	p_sess->hook_rnto_ng(p_sess);
     return;
   }
   resolve_tilde(&p_sess->ftp_arg_str, p_sess);
@@ -1324,6 +1360,8 @@ handle_rnto(struct vsf_session* p_sess)
   if (!vsf_access_check_file(&p_sess->ftp_arg_str))
   {
     vsf_cmdio_write(p_sess, FTP_NOPERM, "Permission denied.");
+    if (p_sess->hook_rnto_ng)
+        p_sess->hook_rnto_ng(p_sess);
     return;
   }
   /* NOTE - might overwrite destination file. Not a concern because the same
@@ -1336,10 +1374,14 @@ handle_rnto(struct vsf_session* p_sess)
   {
     vsf_log_do_log(p_sess, 1);
     vsf_cmdio_write(p_sess, FTP_RENAMEOK, "Rename successful.");
+    if (p_sess->hook_rnto_ok)
+    	p_sess->hook_rnto_ok(p_sess);
   }
   else
   {
     vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Rename failed.");
+    if (p_sess->hook_rnto_ng)
+        p_sess->hook_rnto_ng(p_sess);
   }
 }
 
@@ -1470,12 +1512,16 @@ handle_size(struct vsf_session* p_sess)
   if (!vsf_access_check_file(&p_sess->ftp_arg_str))
   {
     vsf_cmdio_write(p_sess, FTP_NOPERM, "Permission denied.");
+    if (p_sess->hook_size_ng)
+    	p_sess->hook_size_ng(p_sess);
     return;
   }
   retval = str_stat(&p_sess->ftp_arg_str, &s_p_statbuf);
   if (retval != 0 || !vsf_sysutil_statbuf_is_regfile(s_p_statbuf))
   {
     vsf_cmdio_write(p_sess, FTP_FILEFAIL, "Could not get file size.");
+    if (p_sess->hook_size_ng)
+        p_sess->hook_size_ng(p_sess);
   }
   else
   {
@@ -1483,6 +1529,8 @@ handle_size(struct vsf_session* p_sess)
     str_alloc_filesize_t(&s_size_res_str,
                          vsf_sysutil_statbuf_get_size(s_p_statbuf));
     vsf_cmdio_write_str(p_sess, FTP_SIZEOK, &s_size_res_str);
+    if (p_sess->hook_size_ok)
+        p_sess->hook_size_ok(p_sess);
   }
 }
 

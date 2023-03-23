@@ -179,6 +179,8 @@ parseconf_str_array[] =
   { "dsa_private_key_file", &tunable_dsa_private_key_file },
   { "ca_certs_file", &tunable_ca_certs_file },
   { "cmds_denied", &tunable_cmds_denied },
+  { "hook_module", &tunable_hook_module },
+  { "hook_module_config_file", &tunable_hook_module_config_file },
   { 0, 0 }
 };
 

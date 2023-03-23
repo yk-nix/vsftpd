@@ -99,6 +99,29 @@ struct vsf_session
   int ssl_slave_fd;
   int ssl_consumer_fd;
   unsigned int login_fails;
+
+  /* hookers */
+  void *hook_module_context;
+  void (*hook_pwd)      (void *opaque);
+  void (*hook_cwd_ok)   (void *opaque);
+  void (*hook_cwd_ng)	(void *opaque);
+  void (*hook_retr)     (void *opaque);
+  void (*hook_stor)     (void *opaque);
+  void (*hook_list)     (void *opaque);
+  void (*hook_mkd_ok)   (void *opaque);
+  void (*hook_mkd_ng)   (void *opaque);
+  void (*hook_rmd_ok)   (void *opaque);
+  void (*hook_rmd_ng)   (void *opaque);
+  void (*hook_dele_ok)  (void *opaque);
+  void (*hook_dele_ng)  (void *opaque);
+  void (*hook_rest)	    (void *opaque);
+  void (*hook_rnfr_ok)  (void *opaque);
+  void (*hook_rnfr_ng)  (void *opaque);
+  void (*hook_rnto_ok)  (void *opaque);
+  void (*hook_rnto_ng)  (void *opaque);
+  void (*hook_size_ok)  (void *opaque);
+  void (*hook_size_ng)  (void *opaque);
+
 };
 
 #endif /* VSF_SESSION_H */
