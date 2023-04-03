@@ -396,83 +396,83 @@ static void load_hook_module(const char *module_file, struct vsf_session* p_sess
 	void *handle = dlopen(module_file, RTLD_LAZY);
 	if (!handle)
 		return;
-	hook_module_init = dlsym(handle, "hook_module_init");
+	hook_module_init = dlsym(handle, "vsf_hook_module_init");
 	if (!(error = dlerror()))
 		p_sess->hook_module_context = hook_module_init(tunable_hook_module_config_file);
 
-	sym = dlsym(handle, "hook_pwd");
+	sym = dlsym(handle, "vsf_hook_pwd");
 	if (!(error = dlerror()))
 		p_sess->hook_pwd = sym;
 
-	sym = dlsym(handle, "hook_cwd_ok");
+	sym = dlsym(handle, "vsf_hook_cwd_ok");
 	if (!(error = dlerror()))
 		p_sess->hook_cwd_ok = sym;
 
-	sym = dlsym(handle, "hook_cwd_ng");
+	sym = dlsym(handle, "vsf_hook_cwd_ng");
 	if (!(error = dlerror()))
 		p_sess->hook_cwd_ng = sym;
 
-	sym = dlsym(handle, "hook_retr");
+	sym = dlsym(handle, "vsf_hook_retr");
 	if (!(error = dlerror()))
 		p_sess->hook_retr = sym;
 
-	sym = dlsym(handle, "hook_stor");
+	sym = dlsym(handle, "vsf_hook_stor");
 	if (!(error = dlerror()))
 		p_sess->hook_stor = sym;
 
-	sym = dlsym(handle, "hook_list");
+	sym = dlsym(handle, "vsf_hook_list");
 	if (!(error = dlerror()))
 		p_sess->hook_list = sym;
 
-	sym = dlsym(handle, "hook_mkd_ok");
+	sym = dlsym(handle, "vsf_hook_mkd_ok");
 	if (!(error = dlerror()))
 		p_sess->hook_mkd_ok = sym;
 
-	sym = dlsym(handle, "hook_mkd_ng");
+	sym = dlsym(handle, "vsf_hook_mkd_ng");
 	if (!(error = dlerror()))
 		p_sess->hook_mkd_ng = sym;
 
-	sym = dlsym(handle, "hook_rmd_ok");
+	sym = dlsym(handle, "vsf_hook_rmd_ok");
 	if (!(error = dlerror()))
 		p_sess->hook_rmd_ok = sym;
 
-	sym = dlsym(handle, "hook_rmd_ng");
+	sym = dlsym(handle, "vsf_hook_rmd_ng");
 	if (!(error = dlerror()))
 		p_sess->hook_rmd_ng = sym;
 
-	sym = dlsym(handle, "hook_dele_ok");
+	sym = dlsym(handle, "vsf_hook_dele_ok");
 	if (!(error = dlerror()))
 		p_sess->hook_dele_ok = sym;
 
-	sym = dlsym(handle, "hook_dele_ng");
+	sym = dlsym(handle, "vsf_hook_dele_ng");
 	if (!(error = dlerror()))
 		p_sess->hook_dele_ng = sym;
 
-	sym = dlsym(handle, "hook_rest");
+	sym = dlsym(handle, "vsf_hook_rest");
 	if (!(error = dlerror()))
 		p_sess->hook_rest = sym;
 
-	sym = dlsym(handle, "hook_rnfr_ok");
+	sym = dlsym(handle, "vsf_hook_rnfr_ok");
 	if (!(error = dlerror()))
 		p_sess->hook_rnfr_ok = sym;
 
-	sym = dlsym(handle, "hook_rnfr_ng");
+	sym = dlsym(handle, "vsf_hook_rnfr_ng");
 	if (!(error = dlerror()))
 		p_sess->hook_rnfr_ng = sym;
 
-	sym = dlsym(handle, "hook_rnto_ok");
+	sym = dlsym(handle, "vsf_hook_rnto_ok");
 	if (!(error = dlerror()))
 		p_sess->hook_rnto_ok = sym;
 
-	sym = dlsym(handle, "hook_rnto_ng");
+	sym = dlsym(handle, "vsf_hook_rnto_ng");
 	if (!(error = dlerror()))
 		p_sess->hook_rnto_ng = sym;
 
-	sym = dlsym(handle, "hook_size_ok");
+	sym = dlsym(handle, "vsf_hook_size_ok");
 	if (!(error = dlerror()))
 		p_sess->hook_size_ok = sym;
 
-	sym = dlsym(handle, "hook_size_ng");
+	sym = dlsym(handle, "vsf_hook_size_ng");
 	if (!(error = dlerror()))
 		p_sess->hook_size_ng = sym;
 }
